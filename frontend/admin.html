@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⚙️ 管理仪表盘 — TRX Energy Bot</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        :root { --bg: #0a0a0f; --card: rgba(255,255,255,0.04); --border: rgba(255,255,255,0.08); --accent: #00d4aa; --accent2: #ff6b35; --text: #e0e0e0; --dim: #666; --success: #00e676; --warning: #ffab00; --danger: #ff5252; --radius: 16px; }
+
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+        /* 登录页 */
+        .login-wrap { display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 20px; }
+        .login-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 48px; width: 100%; max-width: 400px; text-align: center; }
+        .login-card h1 { font-size: 1.5rem; margin-bottom: 8px; color: #fff; }
+        .login-card p { color: var(--dim); margin-bottom: 32px; font-size: 0.9rem; }
+        .form-group { margin-bottom: 16px; text-align: left; }
+        .form-group label { display: block; font-size: 0.8rem; color: var(--dim); margin-bottom: 6px; }
+        .form-input { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; color: #fff; font-size: 0.95rem; outline: none; }
+        .form-input:focus { border-color: var(--accent); }
+        .login-btn { width: 100%; padding: 14px; border-radius: 10px; background: var(--accent); color: #000; font-weight: 700; font-size: 1rem; border: none; cursor: pointer; margin-top: 8px; }
+        .login-btn:hover { opacity: 0.9; }
+        .login-error { color: var(--danger); font-size: 0.85rem; margin-top: 12px; min-height: 20px; }
+
+        /* 主后台 */
+        .dashboard { display: none; }
+        .sidebar { position: fixed; left: 0; top: 0; bottom: 0; width: 240px; background: rgba(0,0,0,0.3); border-right: 1px solid var(--border); padding: 24px 0; }
+        .sidebar-logo { padding: 0 20px 24px; border-bottom: 1px solid var(--border); margin-bottom: 20px; display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 1rem; }
+        .sidebar-logo span:first-child { font-size: 1.4rem; }
+        .sidebar-nav { list-style: none; }
+        .sidebar-nav li a { display: flex; align-items: center; gap: 10px; padding: 12px 20px; color: var(--dim); text-decoration: none; font-size: 0.9rem; transition: all 0.2s; cursor: pointer; border-left: 3px solid transparent; }
+        .sidebar-nav li a:hover, .sidebar-nav li a.active { color: var(--accent); background: rgba(0,212,170,0.05); border-left-color: var(--accent); }
+        .sidebar-nav li a .icon { font-size: 1.1rem; }
+
+        .main-content { margin-left: 240px; padding: 32px; }
+        .page-title { font-size: 1.5rem; font-weight: 700; color: #fff; margin-bottom: 24px; }
+
+        /* 统计卡片 */
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 32px; }
+        .stat-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; }
+        .stat-card .label { font-size: 0.75rem; color: var(--dim); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.05em; }
+        .stat-card .value { font-size: 1.8rem; font-weight: 700; color: #fff; }
+        .stat-card .sub { font-size: 0.75rem; color: var(--dim); margin-top: 4px; }
+        .stat-card.accent { border-color: rgba(0,212,170,0.3); }
+        .stat-card.accent .value { color: var(--accent); }
+
+        /* 订单表格 */
+        .table-wrap { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+        .table-header { display: flex; justify-content: space-between; align-items: center; padding: 20px 24px; border-bottom: 1px solid var(--border); }
+        .table-title { font-weight: 600; color: #fff; }
+        .filter-select { background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px; color: #fff; font-size: 0.85rem; }
+        table { width: 100%; border-collapse: collapse; }
+        thead th { padding: 12px 16px; text-align: left; font-size: 0.75rem; color: var(--dim); font-weight: 600; text-transform: uppercase; border-bottom: 1px solid var(--border); }
+        tbody tr { border-bottom: 1px solid rgba(255,255,255,0.03); transition: background 0.2s; }
+        tbody tr:hover { background: rgba(255,255,255,0.02); }
+        tbody td { padding: 14px 16px; font-size: 0.85rem; vertical-align: middle; }
+        .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; }
+        .badge.pending { background: rgba(255,171,0,0.15); color: var(--warning); }
+        .badge.paid, .badge.rented { background: rgba(0,230,118,0.15); color: var(--success); }
+        .badge.expired { background: rgba(255,82,82,0.15); color: var(--danger); }
+        .order-id { font-family: monospace; font-size: 0.8rem; color: var(--dim); }
+        .logout-btn { background: rgba(255,82,82,0.1); border: 1px solid rgba(255,82,82,0.3); color: var(--danger); padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 0.85rem; }
+    </style>
+</head>
+<body>
+
+<!-- 登录页 -->
+<div class="login-wrap" id="login-page">
+    <div class="login-card">
+        <div style="font-size:2rem;margin-bottom:12px;">⚙️</div>
+        <h1>管理后台</h1>
+        <p>TRX Energy Bot 管理系统</p>
+        <div class="form-group">
+            <label>用户名</label>
+            <input type="text" id="login-user" class="form-input" placeholder="admin">
+        </div>
+        <div class="form-group">
+            <label>密码</label>
+            <input type="password" id="login-pass" class="form-input" placeholder="••••••">
+        </div>
+        <button class="login-btn" onclick="doLogin()">登录</button>
+        <div class="login-error" id="login-error"></div>
+    </div>
+</div>
+
+<!-- 主后台 -->
+<div class="dashboard" id="dashboard-page">
+    <aside class="sidebar">
+        <div class="sidebar-logo">
+            <span>⚡</span> <span>TRX Energy</span>
+        </div>
+        <ul class="sidebar-nav">
+            <li><a class="active" onclick="showPage('stats')"><span class="icon">📊</span> 概览统计</a></li>
+            <li><a onclick="showPage('orders')"><span class="icon">📋</span> 订单管理</a></li>
+            <li><a onclick="showPage('users')"><span class="icon">👥</span> 用户列表</a></li>
+            <li><a onclick="doLogout()" style="margin-top:20px;"><span class="icon">🚪</span> 退出登录</a></li>
+        </ul>
+    </aside>
+
+    <div class="main-content" id="content">
+        <!-- 动态内容 -->
+    </div>
+</div>
+
+<script>
+const API = window.location.origin;
+let token = localStorage.getItem('admin_token') || '';
+
+function headers() { return { 'Authorization': `Bearer ${token}` }; }
+
+// ─── 登录 ───────────────────────────
+async function doLogin() {
+    const u = document.getElementById('login-user').value;
+    const p = document.getElementById('login-pass').value;
+    try {
+        const resp = await fetch(`${API}/api/admin/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username: u, password: p })
+        });
+        const data = await resp.json();
+        if (resp.ok) {
+            token = data.token;
+            localStorage.setItem('admin_token', token);
+            showDashboard();
+        } else {
+            document.getElementById('login-error').textContent = '用户名或密码错误';
+        }
+    } catch (e) {
+        document.getElementById('login-error').textContent = '连接失败，请检查服务';
+    }
+}
+
+function doLogout() {
+    token = '';
+    localStorage.removeItem('admin_token');
+    document.getElementById('dashboard-page').style.display = 'none';
+    document.getElementById('login-page').style.display = 'flex';
+}
+
+function showDashboard() {
+    document.getElementById('login-page').style.display = 'none';
+    document.getElementById('dashboard-page').style.display = 'block';
+    showPage('stats');
+}
+
+// ─── 页面切换 ───────────────────────────
+async function showPage(name) {
+    document.querySelectorAll('.sidebar-nav a').forEach(a => a.classList.remove('active'));
+    event?.target?.closest('a')?.classList.add('active');
+    const content = document.getElementById('content');
+
+    if (name === 'stats') {
+        await loadStats();
+    } else if (name === 'orders') {
+        await loadOrders();
+    } else if (name === 'users') {
+        await loadUsers();
+    }
+}
+
+// ─── 统计数据 ───────────────────────────
+async function loadStats() {
+    try {
+        const resp = await fetch(`${API}/api/admin/dashboard`, { headers: headers() });
+        if (!resp.ok) return;
+        const d = await resp.json();
+        document.getElementById('content').innerHTML = `
+            <h2 class="page-title">📊 概览统计</h2>
+            <div class="stats-grid">
+                <div class="stat-card accent">
+                    <div class="label">总订单</div>
+                    <div class="value">${d.total_orders}</div>
+                    <div class="sub">累计</div>
+                </div>
+                <div class="stat-card accent">
+                    <div class="label">总收入 (TRX)</div>
+                    <div class="value">${d.total_revenue}</div>
+                    <div class="sub">累计</div>
+                </div>
+                <div class="stat-card">
+                    <div class="label">活跃租赁</div>
+                    <div class="value">${d.active_leases}</div>
+                    <div class="sub">当前</div>
+                </div>
+                <div class="stat-card">
+                    <div class="label">待处理</div>
+                    <div class="value">${d.pending_orders}</div>
+                    <div class="sub">订单</div>
+                </div>
+                <div class="stat-card">
+                    <div class="label">今日订单</div>
+                    <div class="value">${d.today_orders}</div>
+                    <div class="sub">今日</div>
+                </div>
+                <div class="stat-card">
+                    <div class="label">今日收入</div>
+                    <div class="value">${d.today_revenue}</div>
+                    <div class="sub">TRX</div>
+                </div>
+            </div>
+            <div class="table-wrap">
+                <div class="table-header">
+                    <span class="table-title">📋 最近订单</span>
+                    <button class="filter-select" onclick="showPage('orders')">查看全部 →</button>
+                </div>
+                <div id="mini-orders-table"></div>
+            </div>
+        `;
+        // 加载最近订单
+        const r = await fetch(`${API}/api/admin/orders?limit=5`, { headers: headers() });
+        if (r.ok) {
+            const data = await r.json();
+            renderMiniOrders(data.orders);
+        }
+    } catch (e) { console.error(e); }
+}
+
+function renderMiniOrders(orders) {
+    const el = document.getElementById('mini-orders-table');
+    if (!orders || orders.length === 0) {
+        el.innerHTML = '<div style="padding:30px;text-align:center;color:var(--dim)">暂无订单</div>';
+        return;
+    }
+    let html = `<table><thead><tr><th>订单号</th><th>用户</th><th>能量</th><th>天数</th><th>金额</th><th>状态</th><th>时间</th></tr></thead><tbody>`;
+    for (const o of orders) {
+        html += `<tr>
+            <td class="order-id">${o.order_id?.slice(0,12)}...</td>
+            <td>${o.user_id || '-'}</td>
+            <td>${o.energy_amount?.toLocaleString()}</td>
+            <td>${o.rent_days}天</td>
+            <td>${o.trx_amount} TRX</td>
+            <td><span class="badge ${o.status}">${o.status}</span></td>
+            <td>${new Date(o.created_at).toLocaleDateString()}</td>
+        </tr>`;
+    }
+    html += '</tbody></table>';
+    el.innerHTML = html;
+}
+
+// ─── 订单管理 ───────────────────────────
+async function loadOrders() {
+    document.getElementById('content').innerHTML = `
+        <h2 class="page-title">📋 订单管理</h2>
+        <div class="table-wrap">
+            <div class="table-header">
+                <span class="table-title">全部订单</span>
+                <select class="filter-select" id="status-filter" onchange="loadOrders()">
+                    <option value="">全部状态</option>
+                    <option value="pending">⏳ 待处理</option>
+                    <option value="paid">✅ 已支付</option>
+                    <option value="rented">⚡ 租赁中</option>
+                    <option value="expired">⏰ 已过期</option>
+                    <option value="cancelled">❌ 已取消</option>
+                </select>
+            </div>
+            <div id="orders-table"></div>
+        </div>
+    `;
+    const status = document.getElementById('status-filter').value;
+    const url = `${API}/api/admin/orders?limit=50${status ? `&status=${status}` : ''}`;
+    try {
+        const resp = await fetch(url, { headers: headers() });
+        if (resp.ok) {
+            const data = await resp.json();
+            renderOrdersTable(data.orders, data.total);
+        }
+    } catch (e) { console.error(e); }
+}
+
+function renderOrdersTable(orders, total) {
+    const el = document.getElementById('orders-table');
+    if (!orders || orders.length === 0) {
+        el.innerHTML = '<div style="padding:40px;text-align:center;color:var(--dim)">暂无订单</div>';
+        return;
+    }
+    let html = `<table><thead><tr><th>订单号</th><th>用户ID</th><th>TRX地址</th><th>能量</th><th>天数</th><th>金额</th><th>状态</th><th>创建时间</th></tr></thead><tbody>`;
+    for (const o of orders) {
+        html += `<tr>
+            <td class="order-id">${o.order_id?.slice(0,10)}...</td>
+            <td>${o.user_id || '-'}</td>
+            <td class="order-id">${o.trx_address || '-'}</td>
+            <td>${o.energy_amount?.toLocaleString()}</td>
+            <td>${o.rent_days}天</td>
+            <td>${o.trx_amount} TRX</td>
+            <td><span class="badge ${o.status}">${o.status}</span></td>
+            <td>${new Date(o.created_at).toLocaleString()}</td>
+        </tr>`;
+    }
+    html += '</tbody></table>';
+    html += `<div style="padding:16px;color:var(--dim);font-size:0.85rem">共 ${total} 条记录</div>`;
+    el.innerHTML = html;
+}
+
+// ─── 用户列表 ───────────────────────────
+async function loadUsers() {
+    document.getElementById('content').innerHTML = `<h2 class="page-title">👥 用户列表</h2><div class="table-wrap"><div style="padding:20px;color:var(--dim)">加载中...</div></div>`;
+    try {
+        const resp = await fetch(`${API}/api/admin/users?limit=100`, { headers: headers() });
+        if (resp.ok) {
+            const data = await resp.json();
+            renderUsers(data.users, data.total);
+        }
+    } catch (e) { console.error(e); }
+}
+
+function renderUsers(users, total) {
+    const el = document.querySelector('.table-wrap');
+    if (!users || users.length === 0) {
+        el.innerHTML = '<div style="padding:40px;text-align:center;color:var(--dim)">暂无用户</div>';
+        return;
+    }
+    let html = `<table><thead><tr><th>用户ID</th><th>用户名</th><th>TRX地址</th><th>订单数</th><th>累计消费</th><th>注册时间</th></tr></thead><tbody>`;
+    for (const u of users) {
+        html += `<tr>
+            <td>${u.user_id}</td>
+            <td>${u.username || '-'}</td>
+            <td class="order-id">${u.trx_address || '-'}</td>
+            <td>${u.total_orders}</td>
+            <td>${u.total_spent} TRX</td>
+            <td>${new Date(u.created_at).toLocaleDateString()}</td>
+        </tr>`;
+    }
+    html += '</tbody></table>';
+    html += `<div style="padding:16px;color:var(--dim);font-size:0.85rem">共 ${total} 位用户</div>`;
+    el.innerHTML = html;
+}
+
+// ─── 启动 ───────────────────────────
+if (token) {
+    showDashboard();
+} else {
+    document.getElementById('login-page').style.display = 'flex';
+}
+
+// 回车登录
+document.getElementById('login-pass').addEventListener('keyup', e => { if (e.key === 'Enter') doLogin(); });
+</script>
+</body>
+</html>
