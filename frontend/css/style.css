@@ -1,0 +1,196 @@
+/* ======================================
+   TRX Energy Bot — 前端样式
+   ====================================== */
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+    --bg-primary: #0a0a0f;
+    --bg-card: rgba(255,255,255,0.04);
+    --bg-card-hover: rgba(255,255,255,0.07);
+    --border: rgba(255,255,255,0.08);
+    --accent: #00d4aa;
+    --accent-glow: rgba(0,212,170,0.25);
+    --accent2: #ff6b35;
+    --text: #e0e0e0;
+    --text-dim: #666;
+    --success: #00e676;
+    --warning: #ffab00;
+    --danger: #ff5252;
+    --radius: 16px;
+    --radius-sm: 10px;
+}
+
+body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: var(--bg-primary);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+/* 背景 */
+#bg-canvas {
+    position: fixed; top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: 0;
+    opacity: 0.6;
+}
+
+/* 容器 */
+.container {
+    position: relative;
+    z-index: 1;
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 0 20px 60px;
+}
+
+/* 导航 */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 24px 0;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 40px;
+}
+.logo { display: flex; align-items: center; gap: 8px; font-size: 1.2rem; font-weight: 700; }
+.logo-icon { font-size: 1.5rem; }
+.logo-text { color: #fff; }
+.logo-text .accent { color: var(--accent); }
+.nav { display: flex; gap: 20px; }
+.nav-link { color: var(--text-dim); text-decoration: none; font-size: 0.9rem; transition: color 0.2s; }
+.nav-link:hover, .nav-link.active { color: var(--accent); }
+
+/* 英雄区 */
+.hero { text-align: center; margin-bottom: 36px; }
+.hero-title { font-size: 2.4rem; font-weight: 800; line-height: 1.2; color: #fff; margin-bottom: 12px; }
+.gradient-text { background: linear-gradient(135deg, var(--accent), #00aaff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.hero-sub { color: var(--text-dim); font-size: 1rem; line-height: 1.6; }
+
+/* 卡片 */
+.card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px;
+    margin-bottom: 20px;
+    backdrop-filter: blur(10px);
+}
+.card-title { font-size: 1rem; font-weight: 600; margin-bottom: 20px; color: #fff; }
+
+/* 能量选择 */
+.energy-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.energy-btn {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 16px 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+}
+.energy-btn:hover { border-color: var(--accent); background: var(--bg-card-hover); }
+.energy-btn.selected { border-color: var(--accent); background: rgba(0,212,170,0.08); box-shadow: 0 0 20px var(--accent-glow); }
+.e-val { font-size: 1.1rem; font-weight: 700; color: #fff; }
+.e-label { font-size: 0.75rem; color: var(--text-dim); }
+
+.custom-energy { margin-top: 16px; display: flex; align-items: center; gap: 12px; }
+.custom-energy label { font-size: 0.85rem; color: var(--text-dim); white-space: nowrap; }
+.custom-energy input {
+    flex: 1; background: rgba(255,255,255,0.05); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 10px 14px; color: #fff;
+    font-size: 1rem; outline: none; transition: border-color 0.2s;
+}
+.custom-energy input:focus { border-color: var(--accent); }
+
+/* 天数选择 */
+.days-grid { display: flex; gap: 10px; flex-wrap: wrap; }
+.day-btn {
+    flex: 1; min-width: 60px;
+    background: rgba(255,255,255,0.03); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 12px;
+    cursor: pointer; text-align: center; font-weight: 600;
+    transition: all 0.2s; color: var(--text);
+}
+.day-btn:hover { border-color: var(--accent); }
+.day-btn.selected { border-color: var(--accent); background: rgba(0,212,170,0.08); color: var(--accent); box-shadow: 0 0 15px var(--accent-glow); }
+
+/* 地址输入 */
+.address-input {
+    width: 100%; background: rgba(255,255,255,0.05); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 14px; color: #fff;
+    font-size: 0.9rem; font-family: monospace; outline: none;
+    transition: border-color 0.2s;
+}
+.address-input:focus { border-color: var(--accent); }
+.address-tip { font-size: 0.78rem; color: var(--text-dim); margin-top: 8px; }
+
+/* 价格预览 */
+.price-card { background: linear-gradient(135deg, rgba(0,212,170,0.05), rgba(0,100,200,0.05)); }
+.price-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; font-size: 0.9rem; color: var(--text-dim); }
+.price-row .accent { color: var(--accent); }
+.price-divider { border-top: 1px dashed var(--border); margin: 8px 0; }
+.price-row.total { font-size: 1.1rem; font-weight: 700; color: #fff; }
+.total-amount { font-size: 1.5rem; font-weight: 800; color: var(--accent); }
+.price-note { font-size: 0.75rem; color: var(--text-dim); margin-top: 10px; }
+
+/* 提交按钮 */
+.submit-btn {
+    width: 100%; padding: 18px; border-radius: var(--radius);
+    background: linear-gradient(135deg, var(--accent), #00aaff);
+    color: #000; font-size: 1.1rem; font-weight: 700;
+    border: none; cursor: pointer; transition: all 0.3s;
+    box-shadow: 0 4px 30px rgba(0,212,170,0.3);
+}
+.submit-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 40px rgba(0,212,170,0.4); }
+.submit-btn:active { transform: translateY(0); }
+.submit-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+/* 订单状态 */
+.order-status { margin-top: 20px; }
+.order-status h3 { margin-bottom: 20px; color: #fff; }
+.status-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+.status-item { background: rgba(255,255,255,0.03); border-radius: var(--radius-sm); padding: 14px; }
+.status-item label { display: block; font-size: 0.75rem; color: var(--text-dim); margin-bottom: 4px; }
+.status-item span { font-size: 0.9rem; font-weight: 600; color: #fff; word-break: break-all; }
+.status-badge { color: var(--warning) !important; }
+.status-badge.paid, .status-badge.rented { color: var(--success) !important; }
+
+.pay-section { background: rgba(0,212,170,0.05); border: 1px solid rgba(0,212,170,0.2); border-radius: var(--radius); padding: 24px; margin-top: 16px; text-align: center; }
+.pay-section h4 { margin-bottom: 16px; color: #fff; font-size: 1rem; }
+.pay-address { background: rgba(0,0,0,0.3); border-radius: 8px; padding: 12px; font-family: monospace; font-size: 0.8rem; word-break: break-all; color: var(--accent); margin-bottom: 12px; }
+.pay-amount { font-size: 1.2rem; margin-bottom: 16px; }
+.pay-amount strong { color: var(--accent); font-size: 1.4rem; }
+.pay-qr { margin: 16px auto; max-width: 180px; }
+.check-btn {
+    background: rgba(255,255,255,0.05); border: 1px solid var(--accent);
+    color: var(--accent); padding: 12px 24px; border-radius: 8px;
+    cursor: pointer; font-size: 0.9rem; transition: all 0.2s;
+}
+.check-btn:hover { background: rgba(0,212,170,0.1); }
+
+/* 价格表 */
+.section-title { font-size: 1.5rem; font-weight: 700; color: #fff; margin: 40px 0 20px; text-align: center; }
+.pricing-table-wrap { overflow-x: auto; }
+.pricing-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+.pricing-table th { background: rgba(0,212,170,0.1); padding: 12px; color: var(--accent); font-weight: 600; border-bottom: 1px solid var(--border); }
+.pricing-table td { padding: 10px; text-align: center; border-bottom: 1px solid var(--border); color: var(--text); }
+.pricing-table tr:hover td { background: rgba(255,255,255,0.02); }
+.pricing-note { text-align: center; color: var(--text-dim); font-size: 0.8rem; margin-top: 12px; }
+
+/* FAQ */
+.faq-list { display: flex; flex-direction: column; gap: 16px; }
+.faq-item { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; }
+.faq-item h3 { color: #fff; font-size: 0.95rem; margin-bottom: 8px; }
+.faq-item p { color: var(--text-dim); font-size: 0.85rem; line-height: 1.6; }
+
+/* 工具类 */
+.hidden { display: none !important; }
+.main { padding-top: 0; }
+.footer { text-align: center; color: var(--text-dim); font-size: 0.75rem; padding: 30px 0; }
+
+/* 动画 */
+@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
+.loading { animation: pulse 1.5s infinite; }
