@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⚡ TRX 能量闪租</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- 背景动画 -->
+    <canvas id="bg-canvas"></canvas>
+
+    <!-- 主容器 -->
+    <div class="container">
+
+        <!-- 顶部导航 -->
+        <header class="header">
+            <div class="logo">
+                <span class="logo-icon">⚡</span>
+                <span class="logo-text">TRX <span class="accent">Energy</span></span>
+            </div>
+            <nav class="nav">
+                <a href="#" class="nav-link active" onclick="showSection('buy')">闪租</a>
+                <a href="#" class="nav-link" onclick="showSection('pricing')">价格</a>
+                <a href="#" class="nav-link" onclick="showSection('faq')">帮助</a>
+            </nav>
+        </header>
+
+        <!-- 购买能量区域 -->
+        <main class="main" id="section-buy">
+            <div class="hero">
+                <h1 class="hero-title">TRX 能量<span class="gradient-text">即时租赁</span></h1>
+                <p class="hero-sub">无需抵押冻结TRX，立即获得链上能量<br>支持 TRON 全链，最快 5 分钟生效</p>
+            </div>
+
+            <!-- 能量选择 -->
+            <div class="card">
+                <h2 class="card-title">⚡ 选择能量数量</h2>
+                <div class="energy-grid" id="energy-grid">
+                    <button class="energy-btn" data-energy="5000" onclick="selectEnergy(this)">
+                        <span class="e-val">5,000</span>
+                        <span class="e-label">基础</span>
+                    </button>
+                    <button class="energy-btn" data-energy="10000" onclick="selectEnergy(this)">
+                        <span class="e-val">10,000</span>
+                        <span class="e-label">标准</span>
+                    </button>
+                    <button class="energy-btn selected" data-energy="50000" onclick="selectEnergy(this)">
+                        <span class="e-val">50,000</span>
+                        <span class="e-label">高级</span>
+                    </button>
+                    <button class="energy-btn" data-energy="100000" onclick="selectEnergy(this)">
+                        <span class="e-val">100,000</span>
+                        <span class="e-label">专业</span>
+                    </button>
+                    <button class="energy-btn" data-energy="200000" onclick="selectEnergy(this)">
+                        <span class="e-val">200,000</span>
+                        <span class="e-label">企业</span>
+                    </button>
+                    <button class="energy-btn" data-energy="500000" onclick="selectEnergy(this)">
+                        <span class="e-val">500,000</span>
+                        <span class="e-label">旗舰</span>
+                    </button>
+                </div>
+
+                <!-- 自定义能量 -->
+                <div class="custom-energy">
+                    <label>或输入自定义能量：</label>
+                    <input type="number" id="custom-energy" placeholder="5000 ~ 500000"
+                           min="5000" max="500000" step="1000"
+                           oninput="onCustomEnergy(this)">
+                </div>
+            </div>
+
+            <!-- 天数选择 -->
+            <div class="card">
+                <h2 class="card-title">📅 选择租用天数</h2>
+                <div class="days-grid" id="days-grid">
+                    <button class="day-btn selected" data-days="1" onclick="selectDays(this)">1天</button>
+                    <button class="day-btn" data-days="3" onclick="selectDays(this)">3天</button>
+                    <button class="day-btn" data-days="7" onclick="selectDays(this)">7天</button>
+                    <button class="day-btn" data-days="15" onclick="selectDays(this)">15天</button>
+                    <button class="day-btn" data-days="30" onclick="selectDays(this)">30天</button>
+                </div>
+            </div>
+
+            <!-- TRX地址 -->
+            <div class="card">
+                <h2 class="card-title">💰 你的 TRX 接收地址</h2>
+                <input type="text" id="trx-address" class="address-input"
+                       placeholder="TXXXX... (TRON主网地址，34位字符)"
+                       maxlength="34">
+                <div class="address-tip">⚠️ 地址必须为 TRON 主网地址（以 T 开头）</div>
+            </div>
+
+            <!-- 价格预览 -->
+            <div class="card price-card" id="price-preview">
+                <div class="price-row">
+                    <span>⚡ 能量</span>
+                    <span id="preview-energy">50,000</span>
+                </div>
+                <div class="price-row">
+                    <span>📅 天数</span>
+                    <span id="preview-days">1 天</span>
+                </div>
+                <div class="price-row">
+                    <span>💰 单价</span>
+                    <span id="preview-price">0.5 TRX / 1000能量/天</span>
+                </div>
+                <div class="price-divider"></div>
+                <div class="price-row total">
+                    <span>应付总额</span>
+                    <span class="total-amount" id="preview-total">25 TRX</span>
+                </div>
+                <div class="price-note">* 租期结束后TRX原路返回</div>
+            </div>
+
+            <!-- 提交按钮 -->
+            <button class="submit-btn" onclick="createOrder()" id="submit-btn">
+                <span id="btn-text">🚀 立即创建订单</span>
+                <span id="btn-loading" class="hidden">⏳ 创建中...</span>
+            </button>
+
+            <!-- 订单状态 -->
+            <div class="order-status hidden" id="order-status">
+                <h3>📋 订单详情</h3>
+                <div class="status-grid">
+                    <div class="status-item">
+                        <label>订单号</label>
+                        <span id="os-order-id">-</span>
+                    </div>
+                    <div class="status-item">
+                        <label>状态</label>
+                        <span class="status-badge" id="os-status">pending</span>
+                    </div>
+                    <div class="status-item">
+                        <label>能量</label>
+                        <span id="os-energy">-</span>
+                    </div>
+                    <div class="status-item">
+                        <label>天数</label>
+                        <span id="os-days">-</span>
+                    </div>
+                </div>
+                <div class="pay-section" id="pay-section">
+                    <h4>💸 请向以下地址转入应付金额</h4>
+                    <div class="pay-address" id="pay-address">-</div>
+                    <div class="pay-amount">
+                        应付：<strong id="pay-amount">-</strong> TRX
+                    </div>
+                    <div class="pay-qr" id="pay-qr"></div>
+                    <button class="check-btn" onclick="checkOrder()">🔄 检查支付状态</button>
+                </div>
+            </div>
+        </main>
+
+        <!-- 价格表 -->
+        <main class="main hidden" id="section-pricing">
+            <h2 class="section-title">📊 能量价格表</h2>
+            <div class="pricing-table-wrap">
+                <table class="pricing-table">
+                    <thead>
+                        <tr>
+                            <th>能量</th><th>1天</th><th>3天</th><th>7天</th><th>15天</th><th>30天</th>
+                        </tr>
+                    </thead>
+                    <tbody id="pricing-tbody"></tbody>
+                </table>
+            </div>
+            <p class="pricing-note">* 单位：TRX · 价格可能随网络情况调整</p>
+        </main>
+
+        <!-- FAQ -->
+        <main class="main hidden" id="section-faq">
+            <h2 class="section-title">❓ 常见问题</h2>
+            <div class="faq-list">
+                <div class="faq-item">
+                    <h3>什么是TRX能量？</h3>
+                    <p>TRON链上执行智能合约需要消耗能量，类似于以太坊的Gas。租用能量可以避免自己抵押冻结大量TRX。</p>
+                </div>
+                <div class="faq-item">
+                    <h3>租用后能量立即生效吗？</h3>
+                    <p>支付确认后能量立即生效，租期结束后系统自动释放。</p>
+                </div>
+                <div class="faq-item">
+                    <h3>押金如何返还？</h3>
+                    <p>租期结束后，冻结的TRX原路解冻返回，无任何损耗。</p>
+                </div>
+                <div class="faq-item">
+                    <h3>最小/最大租用多少？</h3>
+                    <p>最小 5,000 能量，最多 500,000 能量。</p>
+                </div>
+            </div>
+        </main>
+
+        <footer class="footer">
+            ⚡ TRX Energy Leasing · Built with TRON Network
+        </footer>
+    </div>
+
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
