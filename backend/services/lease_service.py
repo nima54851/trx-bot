@@ -83,8 +83,8 @@ def confirm_payment(db: Session, order_id: str, txid: str) -> Order:
     if order.status != "pending":
         raise ValueError(f"订单状态异常: {order.status}")
 
-    # 更新订单状态
-    order.status = "paid"
+    # 更新订单状态 → rented
+    order.status = "rented"
     order.deposit_txid = txid
     order.lease_start = datetime.utcnow()
     order.lease_end = order.lease_start + timedelta(days=order.rent_days)
