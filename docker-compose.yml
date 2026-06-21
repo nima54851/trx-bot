@@ -1,0 +1,108 @@
+version: "3.8"
+
+services:
+  # ── PostgreSQL 数据库 ──
+  postgres:
+    image: postgres:16-alpine
+    container_name: trxbot_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: trxbot
+      POSTGRES_PASSWORD: trxbotpass
+      POSTGRES_DB: trxbot
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - trxnet
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U trxbot"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── Redis ──
+  redis:
+    image: redis:7-alpine
+    container_name: trxbot_redis
+    restart: always
+    networks:
+      - trxnet
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── FastAPI 后端 ──
+  backend:
+    build:
+      context: ./backend
+      dockerfile: ../Dockerfile.backend
+    container_name: trxbot_backend
+    restart: always
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - trxnet
+    volumes:
+      - ./frontend:/app/frontend:ro
+
+  # ── Celery Worker ──
+  celery:
+    build:
+      context: ./backend
+      dockerfile: ../Dockerfile.backend
+    container_name: trxbot_celery
+    restart: always
+    command: celery -A tron_worker worker --loglevel=info
+    env_file:
+      - .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - trxnet
+
+  # ── Celery Beat (定时任务) ──
+  celery-beat:
+    build:
+      context: ./backend
+      dockerfile: ../Dockerfile.backend
+    container_name: trxbot_celery_beat
+    restart: always
+    command: celery -A tron_worker beat --loglevel=info
+    env_file:
+      - .env
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - trxnet
+
+  # ── Telegram Bot ──
+  bot:
+    build:
+      context: ./bot
+      dockerfile: ../Dockerfile.bot
+    container_name: trxbot_telegram
+    restart: always
+    env_file:
+      - .env
+    networks:
+      - trxnet
+
+networks:
+  trxnet:
+    driver: bridge
+
+volumes:
+  pgdata:
