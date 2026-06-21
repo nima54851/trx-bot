@@ -1,0 +1,4 @@
+python-telegram-bot==20.7
+httpx==0.26.0
+python-dotenv==1.0.0
+tronpy==5.2.6
