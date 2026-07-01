@@ -6,7 +6,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 import os
 
-from api import orders, energy, admin
+from api import orders, energy, admin, game_auth
+from api.game_auth import router as auth_router, profile_router
 from database import engine, Base
 
 app = FastAPI(
@@ -36,6 +37,8 @@ app.mount("/static", StaticFiles(directory=frontend_path), name="static")
 app.include_router(orders.router, prefix="/api/orders", tags=["订单"])
 app.include_router(energy.router, prefix="/api/energy", tags=["能量"])
 app.include_router(admin.router, prefix="/api/admin", tags=["管理"])
+app.include_router(auth_router)   # /api/auth/login, /api/auth/register, /api/auth/me, /api/auth/notifications
+app.include_router(profile_router) # /api/profile
 
 
 @app.get("/")
